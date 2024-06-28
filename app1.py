@@ -8,9 +8,8 @@ from datetime import datetime
 def main():
     st.title('Stock Price Prediction')
 
-    # Clear input button
-    if st.button('Clear Input'):
-        st.experimental_rerun()
+    # Back button
+    back_button = st.markdown('<a href="https://techandtheories.in" target="_blank"><button style="background-color:#4CAF50;color:white;border:none;padding:10px 20px;text-align:center;text-decoration:none;display:inline-block;font-size:16px;margin:4px 2px;cursor:pointer;">Back</button></a>', unsafe_allow_html=True)
 
     # User input for stock symbol
     stock_symbol = st.text_input('Enter stock symbol (e.g., AAPL):', 'AAPL').upper()  # Default to AAPL
