@@ -8,11 +8,37 @@ from datetime import datetime
 def main():
     st.title('Stock Price Prediction')
 
-    # Back button
-    back_button = st.markdown('<a href="https://techandtheories.in" target="_blank"><button style="background-color:#4CAF50;color:white;border:none;padding:10px 20px;text-align:center;text-decoration:none;display:inline-block;font-size:16px;margin:4px 2px;cursor:pointer;">Back</button></a>', unsafe_allow_html=True)
+    # Back button with improved styling
+    back_button = st.markdown("""
+        <style>
+            .back-button {
+                background-color: transparent;
+                color: white;
+                border: 2px solid white;
+                padding: 10px 20px;
+                text-align: center;
+                text-decoration: none;
+                display: inline-block;
+                font-size: 16px;
+                margin: 4px 2px;
+                cursor: pointer;
+                border-radius: 12px;
+            }
+            .back-button:hover {
+                background-color: white;
+                color: black;
+            }
+        </style>
+        <a href="https://techandtheories.in" class="back-button">Back</a>
+    """, unsafe_allow_html=True)
 
-    # User input for stock symbol
-    stock_symbol = st.text_input('Enter stock symbol (e.g., AAPL):', 'AAPL').upper()  # Default to AAPL
+    # User input for stock symbol and name
+    stock_name = st.text_input('Enter the stock name (e.g., Apple):', '').strip()  # Strip any leading/trailing whitespace
+    stock_symbol = st.text_input('Enter stock symbol (e.g., AAPL):', '').upper().strip()  # Strip and uppercase the input
+
+    if not stock_symbol:
+        st.error('Please enter a valid stock symbol.')
+        return
 
     # Define the start date
     start_date = '2000-01-01'
@@ -33,7 +59,7 @@ def main():
         st.error('Failed to download data. Please check the stock symbol and try again.')
         return
 
-    st.write("Stock Data")
+    st.write(f"Stock Data for {stock_name} ({stock_symbol})")
     st.write(stock_data)
 
     # Prepare data for NeuralProphet
@@ -73,7 +99,7 @@ def main():
 
     # Customize layout
     layout = go.Layout(
-        title=f'Stock Price Prediction for {stock_symbol}',
+        title=f'Stock Price Prediction for {stock_name} ({stock_symbol})',
         xaxis=dict(title='Date'),
         yaxis=dict(title='Stock Price (in $)'),
         hovermode='x unified',  # Shows values for all traces at the hovered x-coordinate
