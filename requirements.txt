@@ -3,3 +3,5 @@ streamlit
 plotly
 pandas
 neuralprophet
+datetime
+plotly.graph_objs
