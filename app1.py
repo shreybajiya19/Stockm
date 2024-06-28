@@ -5,13 +5,12 @@ from neuralprophet import NeuralProphet
 import yfinance as yf
 from datetime import datetime
 
-
 def main():
     st.title('Stock Price Prediction')
 
-    # Add a back button at the top of the page
-    if st.button('Back'):
-        st.experimental_set_query_params(page='index.html')
+    # Clear input button
+    if st.button('Clear Input'):
+        st.experimental_rerun()
 
     # User input for stock symbol
     stock_symbol = st.text_input('Enter stock symbol (e.g., AAPL):', 'AAPL').upper()  # Default to AAPL
@@ -23,9 +22,9 @@ def main():
     end_date = datetime.today().strftime('%Y-%m-%d')
 
     # Download stock data from Yahoo Finance
-    @st.cache_data  # Cache data to avoid fetching repeatedly during the session
+    @st.cache  # Cache data to avoid fetching repeatedly during the session
     def load_data(symbol, start, end):
-        stock_data = yf.download(symbol, start=start, end=end)
+        stock_data = yf.download(symbol, start=start, end=end, progress=False)  # Disable progress bar
         return stock_data
 
     with st.spinner('Loading data...'):
@@ -91,8 +90,8 @@ def main():
     # Display Plotly chart
     st.plotly_chart(fig)
 
-    # Add instruction text just below the legend
-    st.write('<div style="text-align: center; margin-top: -20px;">Click on the legend to plot the graph.</div>', unsafe_allow_html=True)
+    # Add instruction text just below the legend using Markdown
+    st.markdown('<div style="text-align: center; margin-top: -20px;">Click on the legend to plot the graph.</div>', unsafe_allow_html=True)
 
 if __name__ == '__main__':
     main()
