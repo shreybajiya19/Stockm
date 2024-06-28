@@ -5,6 +5,14 @@ from neuralprophet import NeuralProphet
 import yfinance as yf
 from datetime import datetime
 
+def get_stock_symbol(stock_name):
+    # Function to retrieve stock symbol from Yahoo Finance based on stock name
+    try:
+        ticker = yf.Ticker(stock_name)
+        return ticker.info['symbol']
+    except:
+        return None
+
 def main():
     st.title('Stock Price Prediction')
 
@@ -32,12 +40,18 @@ def main():
         <a href="https://techandtheories.in" class="back-button">Back</a>
     """, unsafe_allow_html=True)
 
-    # User input for stock symbol and name
+    # User input for stock name
     stock_name = st.text_input('Enter the stock name (e.g., Apple):', '').strip()  # Strip any leading/trailing whitespace
-    stock_symbol = st.text_input('Enter stock symbol (e.g., AAPL):', '').upper().strip()  # Strip and uppercase the input
+
+    if not stock_name:
+        st.error('Please enter a valid stock name.')
+        return
+
+    # Fetch stock symbol
+    stock_symbol = get_stock_symbol(stock_name)
 
     if not stock_symbol:
-        st.error('Please enter a valid stock symbol.')
+        st.error(f'Failed to retrieve stock symbol for "{stock_name}". Please check the stock name and try again.')
         return
 
     # Define the start date
@@ -52,11 +66,11 @@ def main():
         stock_data = yf.download(symbol, start=start, end=end, progress=False)  # Disable progress bar
         return stock_data
 
-    with st.spinner('Loading data...'):
+    with st.spinner(f'Loading data for {stock_name} ({stock_symbol})...'):
         stock_data = load_data(stock_symbol, start_date, end_date)
 
     if stock_data.empty:
-        st.error('Failed to download data. Please check the stock symbol and try again.')
+        st.error('Failed to download data. Please try again or choose another stock.')
         return
 
     st.write(f"Stock Data for {stock_name} ({stock_symbol})")
