@@ -9,7 +9,16 @@ def get_stock_symbol(stock_name):
     # Function to retrieve stock symbol from Yahoo Finance based on stock name
     try:
         ticker = yf.Ticker(stock_name)
-        return ticker.info['symbol']
+        info = ticker.info
+        if 'symbol' in info:
+            return info['symbol']
+        else:
+            # Attempt to find a matching symbol
+            ticker_list = yf.Tickers(stock_name)
+            if len(ticker_list.tickers) > 0:
+                return ticker_list.tickers[0].info['symbol']
+            else:
+                return None
     except:
         return None
 
@@ -134,4 +143,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
