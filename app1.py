@@ -16,7 +16,7 @@ def get_stock_symbol(stock_name):
 def main():
     st.title('Stock Price Prediction')
 
-    # Back button with improved styling
+    # Back button with improved styling and same tab behavior
     back_button = st.markdown("""
         <style>
             .back-button {
