@@ -8,15 +8,16 @@ from datetime import datetime
 def get_stock_symbol(stock_name):
     # Function to retrieve stock symbol from Yahoo Finance based on stock name
     try:
+        # Search for matching tickers
         ticker = yf.Ticker(stock_name)
         info = ticker.info
         if 'symbol' in info:
             return info['symbol']
         else:
-            # Attempt to find a matching symbol
-            ticker_list = yf.Tickers(stock_name)
-            if len(ticker_list.tickers) > 0:
-                return ticker_list.tickers[0].info['symbol']
+            # If no symbol found directly, try to search for the closest match
+            search_results = yf.search(stock_name)
+            if len(search_results) > 0:
+                return search_results[0]['symbol']
             else:
                 return None
     except:
@@ -143,5 +144,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
