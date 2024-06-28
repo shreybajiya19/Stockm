@@ -3,25 +3,7 @@ import pandas as pd
 import plotly.graph_objs as go
 from neuralprophet import NeuralProphet
 import yfinance as yf
-from datetime import datetime
-
-def get_stock_symbol(stock_name):
-    # Function to retrieve stock symbol from Yahoo Finance based on stock name
-    try:
-        # Search for matching tickers
-        ticker = yf.Ticker(stock_name)
-        info = ticker.info
-        if 'symbol' in info:
-            return info['symbol']
-        else:
-            # If no symbol found directly, try to search for the closest match
-            search_results = yf.search(stock_name)
-            if len(search_results) > 0:
-                return search_results[0]['symbol']
-            else:
-                return None
-    except:
-        return None
+from datetime import datetime, timedelta
 
 def main():
     st.title('Stock Price Prediction')
@@ -50,57 +32,63 @@ def main():
         <a href="https://techandtheories.in" class="back-button">Back</a>
     """, unsafe_allow_html=True)
 
-    # User input for stock name
-    stock_name = st.text_input('Enter the stock name (e.g., Apple):', '').strip()  # Strip any leading/trailing whitespace
-
-    if not stock_name:
-        st.error('Please enter a valid stock name.')
-        return
-
-    # Fetch stock symbol
-    stock_symbol = get_stock_symbol(stock_name)
+    # User input for stock symbol
+    stock_symbol = st.text_input('Enter the stock symbol (e.g., AAPL):', '').strip().upper()
 
     if not stock_symbol:
-        st.error(f'Failed to retrieve stock symbol for "{stock_name}". Please check the stock name and try again.')
+        st.error('Please enter a valid stock symbol.')
         return
 
-    # Define the start date
-    start_date = '2000-01-01'
-
-    # Get today's date for the end date
+    # Define the start date and end date
+    start_date = (datetime.now() - timedelta(days=365*5)).strftime('%Y-%m-%d')  # 5 years of data
     end_date = datetime.today().strftime('%Y-%m-%d')
 
     # Download stock data from Yahoo Finance
     @st.cache  # Cache data to avoid fetching repeatedly during the session
     def load_data(symbol, start, end):
-        stock_data = yf.download(symbol, start=start, end=end, progress=False)  # Disable progress bar
+        stock_data = yf.download(symbol, start=start, end=end, progress=False)
         return stock_data
 
-    with st.spinner(f'Loading data for {stock_name} ({stock_symbol})...'):
+    with st.spinner(f'Loading data for {stock_symbol}...'):
         stock_data = load_data(stock_symbol, start_date, end_date)
 
     if stock_data.empty:
-        st.error('Failed to download data. Please try again or choose another stock.')
+        st.error(f'Failed to download data for {stock_symbol}. Please check the stock symbol and try again.')
         return
 
-    st.write(f"Stock Data for {stock_name} ({stock_symbol})")
+    st.write(f"Stock Data for {stock_symbol}")
     st.write(stock_data)
 
     # Prepare data for NeuralProphet
     stocks = stock_data[['Close']].reset_index()
     stocks.columns = ['ds', 'y']  # NeuralProphet expects columns named 'ds' (date) and 'y' (target)
 
-    # Initialize NeuralProphet model
-    model = NeuralProphet()
+    # Initialize NeuralProphet model with optimized parameters
+    model = NeuralProphet(
+        growth='linear',  # linear or logistic
+        changepoints=None,  # list of dates at which to include potential changepoints
+        n_changepoints=5,  # number of potential changepoints to include
+        yearly_seasonality='auto',  # can be 'auto', True, False, or a number of Fourier components to generate
+        weekly_seasonality='auto',  # same as above
+        daily_seasonality='auto',  # same as above
+        seasonality_mode='additive',  # 'additive' or 'multiplicative'
+        seasonality_reg=0.0,  # strength of the seasonality prior
+        n_lags=0,  # number of lagged variables to include as additional features
+        num_hidden_layers=0,  # number of hidden layers to include in the AR-Net component
+        d_hidden=10,  # dimensionality of the hidden layers
+        ar_sparsity=None,  # use Auto AR Sparsity
+        learning_rate=1.0,  # learning rate parameter
+        epochs=40,  # number of epochs to train the model
+    )
 
     # Fit the model
     with st.spinner('Training model...'):
-        model.fit(stocks)
+        model.fit(stocks, freq='D')  # Assuming daily data
 
     # Make future predictions
-    future = model.make_future_dataframe(stocks, periods=300)  # Extend the dataframe for future periods
-    forecast = model.predict(future)  # Make predictions for the future
-    actual_prediction = model.predict(stocks)  # Predictions on the actual data
+    future = model.make_future_dataframe(stocks, periods=300)
+    forecast = model.predict(future)
+    actual_prediction = model.predict(stocks)
 
     # Plotting with Plotly
     st.subheader('Stock Price Prediction Results')
@@ -123,7 +111,7 @@ def main():
 
     # Customize layout
     layout = go.Layout(
-        title=f'Stock Price Prediction for {stock_name} ({stock_symbol})',
+        title=f'Stock Price Prediction for {stock_symbol}',
         xaxis=dict(title='Date'),
         yaxis=dict(title='Stock Price (in $)'),
         hovermode='x unified',  # Shows values for all traces at the hovered x-coordinate
