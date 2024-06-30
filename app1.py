@@ -48,7 +48,7 @@ def main():
         model.fit(stocks)
 
     # Make future predictions
-    future = model.make_future_dataframe(stocks, periods=300)  # Extend the dataframe for future periods
+    future = model.make_future_dataframe(stocks, periods=1000)  # Extend the dataframe for future periods
     forecast = model.predict(future)  # Make predictions for the future
     actual_prediction = model.predict(stocks)  # Predictions on the actual data
 
