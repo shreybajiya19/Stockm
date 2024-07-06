@@ -72,10 +72,10 @@ def main():
 
         # Display financial data
         for title, data in financial_data.items():
-        if title == 'Key Metrics':
-            st.subheader('Key Metrics and Indicators')
-            for metric, value in data.items():
-                st.write(f"- {metric}: {value}")
+            if title == 'Key Metrics':
+                st.subheader('Key Metrics and Indicators')
+                for metric, value in data.items():
+                    st.write(f"- {metric}: {value}")
         else:
             st.subheader(title)
             st.write(data)
