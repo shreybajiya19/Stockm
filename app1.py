@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.graph_objs as go
 from neuralprophet import NeuralProphet
 import yfinance as yf
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def main():
     st.title('Stock Price and Financial Data Analysis')
@@ -15,7 +15,10 @@ def main():
     )
 
     # User input for stock symbol
-    stock_symbol = st.text_input('Enter stock symbol (e.g., AAPL):', 'AAPL').upper()
+    stock_symbol = st.text_input('Enter stock symbol (e.g., AAPL):').upper()
+
+    # User input for number of days to predict
+    predict_days = st.number_input('Enter number of days to predict:', min_value=1, max_value=365, value=30)
 
     # Define the start date
     start_date = '2000-01-01'
@@ -71,7 +74,7 @@ def main():
         model.fit(stocks)
 
     # Make future predictions
-    future = model.make_future_dataframe(stocks, periods=1000)
+    future = model.make_future_dataframe(stocks, periods=predict_days)
     forecast = model.predict(future)
     actual_prediction = model.predict(stocks)
 
