@@ -19,7 +19,7 @@ def main():
 
     # User input for number of days to predict
     
-    predict_days = st.number_input('Enter number of days to predict:', min_value=1, value=1, step=1, format='%d')
+    predict_days = st.number_input('Enter number of days to predict:', min_value=1, value=30, step=1, format='%d')
     st.markdown('Higher number of days for prediction will increase the time taken.')
 
     # Predict button
