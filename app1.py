@@ -18,8 +18,9 @@ def main():
     stock_symbol = st.text_input('Enter stock symbol (e.g., AAPL):').upper()
 
     # User input for number of days to predict
-    st.markdown('Higher number of days for prediction will increase the time taken.')
+    
     predict_days = st.number_input('Enter number of days to predict:', min_value=1, value=1, step=1, format='%d')
+    st.markdown('Higher number of days for prediction will increase the time taken.')
 
     # Predict button
     if st.button('Predict'):
@@ -62,6 +63,7 @@ def main():
                     'Beta': ticker.info.get('beta'),
                     'Market Cap': ticker.info.get('marketCap'),
                     'PE Ratio': ticker.info.get('forwardPE'),
+                    'Dividend Yield': ticker.info.get('dividendYield'),
                 }
             }
             return financials
