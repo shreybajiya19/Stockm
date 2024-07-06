@@ -17,83 +17,58 @@ def main():
     # User input for stock symbol
     stock_symbol = st.text_input('Enter stock symbol (e.g., AAPL):').upper()
 
-    # User input for number of days to predict
-    predict_days = st.number_input('Enter number of days to predict:', min_value=1)
+    # User input for number of days to predict (initially blank)
+    predict_days = st.number_input('Enter number of days to predict:', min_value=1, value=1, step=1, format='%d')
 
     # Predict button
     if st.button('Predict'):
-        predict_stock(stock_symbol, predict_days)
+        if not stock_symbol:
+            st.error('Please enter a stock symbol.')
+            return
 
-def predict_stock(stock_symbol, predict_days):
-    # Define the start date
-    start_date = '2000-01-01'
+        # Define the start date
+        start_date = '2000-01-01'
 
-    # Get today's date for the end date
-    end_date = datetime.today().strftime('%Y-%m-%d')
+        # Get today's date for the end date
+        end_date = datetime.today().strftime('%Y-%m-%d')
 
-    # Download stock data from Yahoo Finance
-    @st.cache_data
-    def load_data(symbol, start, end):
-        stock_data = yf.download(symbol, start=start, end=end, progress=False)
-        return stock_data
+        # Download stock data from Yahoo Finance
+        @st.cache
+        def load_data(symbol, start, end):
+            stock_data = yf.download(symbol, start=start, end=end, progress=False)
+            return stock_data
 
-    with st.spinner('Loading stock data...'):
-        stock_data = load_data(stock_symbol, start_date, end_date)
+        with st.spinner('Loading stock data...'):
+            stock_data = load_data(stock_symbol, start_date, end_date)
 
-    if stock_data.empty:
-        st.error('Failed to download data. Please check the stock symbol and try again.')
-        return
+        if stock_data.empty:
+            st.error('Failed to download data. Please check the stock symbol and try again.')
+            return
 
-    st.write("Stock Data")
-    st.write(stock_data)
+        st.write("Stock Data")
+        st.write(stock_data)
 
-    # Download additional financial data from Yahoo Finance
-    @st.cache_data
-    def load_financial_data(symbol):
-        ticker = yf.Ticker(symbol)
-        financials = {
-            'Balance Sheet': ticker.balance_sheet,
-            'Income Statement': ticker.financials,
-            'Cash Flow': ticker.cashflow,
-            'Ratios': ticker.financials.loc[['Gross Profit', 'Operating Income', 'Net Income']],
-        }
-        return financials
+        # Prepare data for NeuralProphet
+        stocks = stock_data[['Close']].reset_index()
+        stocks.columns = ['ds', 'y']
 
-    with st.spinner('Loading financial data...'):
-        financial_data = load_financial_data(stock_symbol)
+        # Initialize NeuralProphet model
+        model = NeuralProphet()
 
-    # Display financial data
-    for title, data in financial_data.items():
-        st.subheader(title)
-        st.write(data)
-
-    # Prepare data for NeuralProphet
-    stocks = stock_data[['Close']].reset_index()
-    stocks.columns = ['ds', 'y']
-
-    # Initialize NeuralProphet model
-    model = NeuralProphet()
-
-    with st.spinner('Training model...'):
         # Fit the model
-        model.fit(stocks)
+        with st.spinner('Training model...'):
+            model.fit(stocks, freq="D")
 
         # Make future predictions
         future = model.make_future_dataframe(stocks, periods=predict_days)
         forecast = model.predict(future)
-        actual_prediction = model.predict(stocks)
 
         # Plotting with Plotly
         st.subheader('Stock Price Prediction Results')
 
-        # Create traces for actual data, predictions on actual data, and future forecasts
+        # Create traces for actual data and forecast
         actual_trace = go.Scatter(
             x=stocks['ds'], y=stocks['y'], mode='lines', name='Actual', line=dict(color='green'),
-            hovertemplate='<b>Date:</b> %{x|%Y-%m-%d}<br><b>Price:</b> $%{y:.2f}'
-        )
-
-        prediction_trace = go.Scatter(
-            x=actual_prediction['ds'], y=actual_prediction['yhat1'], mode='lines', name='Predicted on Actual', line=dict(color='red'),
             hovertemplate='<b>Date:</b> %{x|%Y-%m-%d}<br><b>Price:</b> $%{y:.2f}'
         )
 
@@ -115,7 +90,7 @@ def predict_stock(stock_symbol, predict_days):
         )
 
         # Create figure and add traces
-        fig = go.Figure(data=[actual_trace, prediction_trace, forecast_trace], layout=layout)
+        fig = go.Figure(data=[actual_trace, forecast_trace], layout=layout)
 
         # Display Plotly chart
         st.plotly_chart(fig)
@@ -125,7 +100,6 @@ def predict_stock(stock_symbol, predict_days):
 
 if __name__ == '__main__':
     main()
-
 
 
 
