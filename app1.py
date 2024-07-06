@@ -17,8 +17,9 @@ def main():
     # User input for stock symbol
     stock_symbol = st.text_input('Enter stock symbol (e.g., AAPL):').upper()
 
-    # User input for number of days to predict (initially blank)
-    predict_days = st.number_input('Enter number of days to predict:', min_value=1, value=30, step=1, format='%d')
+    # User input for number of days to predict
+    st.markdown('Higher number of days for prediction will increase the time taken.')
+    predict_days = st.number_input('Enter number of days to predict:', min_value=1, value=1, step=1, format='%d')
 
     # Predict button
     if st.button('Predict'):
@@ -56,15 +57,13 @@ def main():
                 'Balance Sheet': ticker.balance_sheet,
                 'Income Statement': ticker.financials,
                 'Cash Flow': ticker.cashflow,
-                'A Quick Glance': ticker.financials.loc[['Gross Profit', 'Operating Income', 'Net Income']],
+                'Ratios': ticker.financials.loc[['Gross Profit', 'Operating Income', 'Net Income']],
+                'Key Metrics': {
+                    'Beta': ticker.info.get('beta'),
+                    'Market Cap': ticker.info.get('marketCap'),
+                    'PE Ratio': ticker.info.get('forwardPE'),
+                }
             }
-            key_metrics = {
-                'Market Cap': ticker.info.get('marketCap'),
-                'Price to Earnings Ratio (P/E)': ticker.info.get('forwardPE'),
-                'Dividend Yield': ticker.info.get('dividendYield'),
-                'Beta': ticker.info.get('beta')
-            }
-            financials['Key Metrics'] = key_metrics
             return financials
 
         with st.spinner('Loading financial data...'):
@@ -72,13 +71,12 @@ def main():
 
         # Display financial data
         for title, data in financial_data.items():
-            if title == 'Key Metrics':
-                st.subheader('Key Metrics and Indicators')
-                for metric, value in data.items():
-                    st.write(f"- {metric}: {value}")
-        else:
             st.subheader(title)
-            st.write(data)
+            if isinstance(data, pd.DataFrame):
+                st.write(data)
+            elif isinstance(data, dict):
+                for key, value in data.items():
+                    st.write(f"{key}: {value}")
 
         # Prepare data for NeuralProphet
         stocks = stock_data[['Close']].reset_index()
