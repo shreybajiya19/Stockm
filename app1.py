@@ -142,7 +142,7 @@ def main():
         # Disclaimer
         st.markdown('''
             <div style="margin-top: 20px; font-size: 14px; color: #666666; text-align: center;">
-                **Disclaimer:** Stock price prediction is inherently uncertain and may not be accurate. 
+                Disclaimer: Stock price prediction is inherently uncertain and may not be accurate. 
                 Past performance is not indicative of future results. Use predictions at your own risk.
             </div>
         ''', unsafe_allow_html=True)
