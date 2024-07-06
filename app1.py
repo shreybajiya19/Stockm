@@ -18,7 +18,7 @@ def main():
     stock_symbol = st.text_input('Enter stock symbol (e.g., AAPL):').upper()
 
     # User input for number of days to predict
-    predict_days = st.number_input('Enter number of days to predict:', min_value=1, max_value=365, value=30)
+    predict_days = st.number_input('Enter number of days to predict:', min_value=1)
 
     # Define the start date
     start_date = '2000-01-01'
