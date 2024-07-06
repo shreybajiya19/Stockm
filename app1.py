@@ -68,11 +68,9 @@ def main():
 
     # Initialize NeuralProphet model
     model = NeuralProphet()
-    prediction_started = False
 
     # Button to start prediction
     if st.button('Predict'):
-        prediction_started = True
         with st.spinner('Training model...'):
             # Fit the model
             model.fit(stocks)
