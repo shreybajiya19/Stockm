@@ -10,7 +10,7 @@ def main():
 
     # Back button
     st.markdown(
-        '<a href="https://techandtheories.in" target="_blank"><button style="background-color:#4CAF50;color:white;border:none;padding:10px 20px;text-align:center;text-decoration:none;display:inline-block;font-size:16px;margin:4px 2px;cursor:pointer;">Back</button></a>', 
+        '<a href="https://stockinsight.co.in" target="_self"><button style="background-color:#4CAF50;color:white;border:none;padding:10px 20px;text-align:center;text-decoration:none;display:inline-block;font-size:16px;margin:4px 2px;cursor:pointer;">Back</button></a>', 
         unsafe_allow_html=True
     )
 
