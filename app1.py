@@ -1,9 +1,10 @@
+
 import streamlit as st
 import pandas as pd
 import plotly.graph_objs as go
 from neuralprophet import NeuralProphet
 import yfinance as yf
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def main():
     st.title('Stock Price and Financial Data Analysis')
@@ -18,6 +19,7 @@ def main():
     stock_symbol = st.text_input('Enter stock symbol (e.g., AAPL):').upper()
 
     # User input for number of days to predict
+    
     predict_days = st.number_input('Enter number of days to predict:', min_value=1, value=1, step=1, format='%d')
     st.markdown('Higher number of days for prediction will increase the time taken.')
 
@@ -48,6 +50,36 @@ def main():
 
         st.write("Stock Data")
         st.write(stock_data)
+
+        # Download additional financial data from Yahoo Finance
+        @st.cache
+        def load_financial_data(symbol):
+            ticker = yf.Ticker(symbol)
+            financials = {
+                'Balance Sheet': ticker.balance_sheet,
+                'Income Statement': ticker.financials,
+                'Cash Flow': ticker.cashflow,
+                'A Quick Glance': ticker.financials.loc[['Gross Profit', 'Operating Income', 'Net Income']],
+                'Key Metrics': {
+                    'Beta': ticker.info.get('beta'),
+                    'Market Cap': ticker.info.get('marketCap'),
+                    'PE Ratio': ticker.info.get('forwardPE'),
+                    'Dividend Yield': ticker.info.get('dividendYield'),
+                }
+            }
+            return financials
+
+        with st.spinner('Loading financial data...'):
+            financial_data = load_financial_data(stock_symbol)
+
+        # Display financial data
+        for title, data in financial_data.items():
+            st.subheader(title)
+            if isinstance(data, pd.DataFrame):
+                st.write(data)
+            elif isinstance(data, dict):
+                for key, value in data.items():
+                    st.write(f"{key}: {value}")
 
         # Prepare data for NeuralProphet
         stocks = stock_data[['Close']].reset_index()
@@ -114,7 +146,6 @@ def main():
                 Past performance is not indicative of future results. Use predictions at your own risk.
             </div>
         ''', unsafe_allow_html=True)
-
 if __name__ == '__main__':
     main()
 
