@@ -18,7 +18,7 @@ def main():
     stock_symbol = st.text_input('Enter stock symbol (e.g., AAPL):').upper()
 
     # User input for number of days to predict (initially blank)
-    predict_days = st.number_input('Enter number of days to predict:', min_value=30, value=1, step=1, format='%d')
+    predict_days = st.number_input('Enter number of days to predict:', min_value=1, value=30, step=1, format='%d')
 
     # Predict button
     if st.button('Predict'):
