@@ -53,10 +53,10 @@ def main():
         def load_financial_data(symbol):
             ticker = yf.Ticker(symbol)
             financials = {
-                'Balance Sheet': ticker.balance_sheet,
-                'Income Statement': ticker.financials,
-                'Cash Flow': ticker.cashflow,
-                'Ratios': ticker.financials.loc[['Gross Profit', 'Operating Income', 'Net Income']],
+                'Balance Sheet': clean_data(ticker.balance_sheet),
+                'Income Statement': clean_data(ticker.financials),
+                'Cash Flow': clean_data(ticker.cashflow),
+                'Ratios': clean_data(ticker.financials.loc[['Gross Profit', 'Operating Income', 'Net Income']]),
             }
             return financials
 
@@ -124,8 +124,19 @@ def main():
         # Add instruction text just below the legend using Markdown
         st.markdown('<div style="text-align: center; margin-top: -20px;">Click on the legend to plot the graph.</div>', unsafe_allow_html=True)
 
+def clean_data(data):
+    """
+    Clean financial data by removing timestamp and handling None values.
+    """
+    if isinstance(data, pd.DataFrame):
+        data = data.dropna(how='all')  # Remove rows with all NaN values
+        data = data.applymap(lambda x: '' if pd.isna(x) else x)  # Replace NaN with empty string
+        data.index = data.index.strftime('%Y-%m-%d')  # Format index as YYYY-MM-DD
+    return data
+
 if __name__ == '__main__':
     main()
+
 
 
 
