@@ -131,15 +131,12 @@ def clean_data(data):
     if isinstance(data, pd.DataFrame):
         data = data.dropna(how='all')  # Remove rows with all NaN values
         data = data.applymap(lambda x: '' if pd.isna(x) else x)  # Replace NaN with empty string
-        data.index = data.index.strftime('%Y-%m-%d')  # Format index as YYYY-MM-DD
+        if isinstance(data.index, pd.DatetimeIndex):
+            data.index = data.index.strftime('%Y-%m-%d')  # Format index as YYYY-MM-DD if DatetimeIndex
     return data
 
 if __name__ == '__main__':
     main()
-
-
-
-
 
 
 # import streamlit as st
