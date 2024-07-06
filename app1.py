@@ -58,7 +58,7 @@ def main():
                 'Balance Sheet': ticker.balance_sheet,
                 'Income Statement': ticker.financials,
                 'Cash Flow': ticker.cashflow,
-                'Ratios': ticker.financials.loc[['Gross Profit', 'Operating Income', 'Net Income']],
+                'A Quick Glance': ticker.financials.loc[['Gross Profit', 'Operating Income', 'Net Income']],
                 'Key Metrics': {
                     'Beta': ticker.info.get('beta'),
                     'Market Cap': ticker.info.get('marketCap'),
