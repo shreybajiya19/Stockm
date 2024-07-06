@@ -48,6 +48,26 @@ def main():
         st.write("Stock Data")
         st.write(stock_data)
 
+        # Download additional financial data from Yahoo Finance
+        @st.cache
+        def load_financial_data(symbol):
+            ticker = yf.Ticker(symbol)
+            financials = {
+                'Balance Sheet': ticker.balance_sheet,
+                'Income Statement': ticker.financials,
+                'Cash Flow': ticker.cashflow,
+                'Ratios': ticker.financials.loc[['Gross Profit', 'Operating Income', 'Net Income']],
+            }
+            return financials
+
+        with st.spinner('Loading financial data...'):
+            financial_data = load_financial_data(stock_symbol)
+
+        # Display financial data
+        for title, data in financial_data.items():
+            st.subheader(title)
+            st.write(data)
+
         # Prepare data for NeuralProphet
         stocks = stock_data[['Close']].reset_index()
         stocks.columns = ['ds', 'y']
@@ -57,18 +77,24 @@ def main():
 
         # Fit the model
         with st.spinner('Training model...'):
-            model.fit(stocks, freq="D")
+            model.fit(stocks)
 
         # Make future predictions
         future = model.make_future_dataframe(stocks, periods=predict_days)
         forecast = model.predict(future)
+        actual_prediction = model.predict(stocks)
 
         # Plotting with Plotly
         st.subheader('Stock Price Prediction Results')
 
-        # Create traces for actual data and forecast
+        # Create traces for actual data, predictions on actual data, and future forecasts
         actual_trace = go.Scatter(
             x=stocks['ds'], y=stocks['y'], mode='lines', name='Actual', line=dict(color='green'),
+            hovertemplate='<b>Date:</b> %{x|%Y-%m-%d}<br><b>Price:</b> $%{y:.2f}'
+        )
+
+        prediction_trace = go.Scatter(
+            x=actual_prediction['ds'], y=actual_prediction['yhat1'], mode='lines', name='Predicted on Actual', line=dict(color='red'),
             hovertemplate='<b>Date:</b> %{x|%Y-%m-%d}<br><b>Price:</b> $%{y:.2f}'
         )
 
@@ -90,7 +116,7 @@ def main():
         )
 
         # Create figure and add traces
-        fig = go.Figure(data=[actual_trace, forecast_trace], layout=layout)
+        fig = go.Figure(data=[actual_trace, prediction_trace, forecast_trace], layout=layout)
 
         # Display Plotly chart
         st.plotly_chart(fig)
@@ -100,6 +126,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
