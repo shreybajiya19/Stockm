@@ -18,7 +18,7 @@ def main():
     stock_symbol = st.text_input('Enter stock symbol (e.g., AAPL):').upper()
 
     # User input for number of days to predict (initially blank)
-    predict_days = st.number_input('Enter number of days to predict:', min_value=1, value=1, step=1, format='%d')
+    predict_days = st.number_input('Enter number of days to predict:', min_value=30, value=1, step=1, format='%d')
 
     # Predict button
     if st.button('Predict'):
@@ -53,11 +53,18 @@ def main():
         def load_financial_data(symbol):
             ticker = yf.Ticker(symbol)
             financials = {
-                'Balance Sheet': clean_data(ticker.balance_sheet),
-                'Income Statement': clean_data(ticker.financials),
-                'Cash Flow': clean_data(ticker.cashflow),
-                'Ratios': clean_data(ticker.financials.loc[['Gross Profit', 'Operating Income', 'Net Income']]),
+                'Balance Sheet': ticker.balance_sheet,
+                'Income Statement': ticker.financials,
+                'Cash Flow': ticker.cashflow,
+                'A Quick Glance': ticker.financials.loc[['Gross Profit', 'Operating Income', 'Net Income']],
             }
+            key_metrics = {
+                'Market Cap': ticker.info.get('marketCap'),
+                'Price to Earnings Ratio (P/E)': ticker.info.get('forwardPE'),
+                'Dividend Yield': ticker.info.get('dividendYield'),
+                'Beta': ticker.info.get('beta')
+            }
+            financials['Key Metrics'] = key_metrics
             return financials
 
         with st.spinner('Loading financial data...'):
@@ -65,6 +72,11 @@ def main():
 
         # Display financial data
         for title, data in financial_data.items():
+        if title == 'Key Metrics':
+            st.subheader('Key Metrics and Indicators')
+            for metric, value in data.items():
+                st.write(f"- {metric}: {value}")
+        else:
             st.subheader(title)
             st.write(data)
 
@@ -123,17 +135,6 @@ def main():
 
         # Add instruction text just below the legend using Markdown
         st.markdown('<div style="text-align: center; margin-top: -20px;">Click on the legend to plot the graph.</div>', unsafe_allow_html=True)
-
-def clean_data(data):
-    """
-    Clean financial data by removing timestamp and handling None values.
-    """
-    if isinstance(data, pd.DataFrame):
-        data = data.dropna(how='all')  # Remove rows with all NaN values
-        data = data.applymap(lambda x: '' if pd.isna(x) else x)  # Replace NaN with empty string
-        if isinstance(data.index, pd.DatetimeIndex):
-            data.index = data.index.strftime('%Y-%m-%d')  # Format index as YYYY-MM-DD if DatetimeIndex
-    return data
 
 if __name__ == '__main__':
     main()
