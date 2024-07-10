@@ -6,7 +6,7 @@ import yfinance as yf
 from datetime import datetime, timedelta
 
 def main():
-    st.title('Stock Price and Financial Data Analysis')
+    st.title('Stock Price Prediction and Financial Data Analysis')
 
     # Back button
     st.markdown(
