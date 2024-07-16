@@ -4,7 +4,7 @@ import plotly.graph_objs as go
 import yfinance as yf
 from datetime import datetime
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
+from scikit-learn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 
