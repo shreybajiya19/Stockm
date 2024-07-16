@@ -4,9 +4,9 @@ import plotly.graph_objs as go
 import yfinance as yf
 from datetime import datetime
 import numpy as np
-from scikit-learn.preprocessing import MinMaxScaler
+import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense
+from tensorflow.keras.layers import LSTM, Dense, Normalization
 
 def main():
     st.title('Stock Price Prediction with LSTM')
@@ -42,8 +42,11 @@ def main():
 
     # Prepare data for LSTM
     data = stock_data['Close'].values.reshape(-1, 1)
-    scaler = MinMaxScaler(feature_range=(0, 1))
-    scaled_data = scaler.fit_transform(data)
+    
+    # Use TensorFlow's Normalization layer
+    normalizer = Normalization()
+    normalizer.adapt(data)
+    scaled_data = normalizer(data)
 
     # Ensure enough data for training and testing
     train_size = int(len(scaled_data) * 0.8)  # 80% for training
@@ -100,10 +103,10 @@ def main():
     train_predict = model.predict(X_train)
     test_predict = model.predict(X_test)
 
-    # Invert predictions
-    train_predict = scaler.inverse_transform(train_predict)
-    test_predict = scaler.inverse_transform(test_predict)
-    actual_data = scaler.inverse_transform(scaled_data)
+    # Invert predictions using the normalizer's inverse_transform
+    train_predict = normalizer.mean + normalizer.variance ** 0.5 * train_predict
+    test_predict = normalizer.mean + normalizer.variance ** 0.5 * test_predict
+    actual_data = normalizer.mean + normalizer.variance ** 0.5 * scaled_data
 
     # Plotting with Plotly
     st.subheader('Stock Price Prediction Results')
